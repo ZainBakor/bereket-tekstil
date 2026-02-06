@@ -37,7 +37,36 @@
 .products-sidebar {
     position: sticky;
     top: 140px;
-    height: fit-content;
+    height: auto;
+    max-height: calc(100vh - 160px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+    scrollbar-width: none;
+    /* Firefox: hide by default */
+}
+
+.products-sidebar:hover {
+    scrollbar-width: thin;
+    /* Firefox: show on hover */
+}
+
+/* Chrome, Safari, Edge: Custom scrollbar styling */
+.products-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.products-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.products-sidebar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: var(--radius-full);
+}
+
+.products-sidebar:hover::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
 }
 
 .filter-group {
