@@ -247,7 +247,7 @@ Merhaba Bereket Tekstil! 👋
 ${formData.message}
         `.trim();
 
-        const whatsappLink = `https://wa.me/905551234567?text=${encodeURIComponent(whatsappMessage)}`;
+        const whatsappLink = `https://wa.me/905011072220?text=${encodeURIComponent(whatsappMessage)}`;
         window.open(whatsappLink, '_blank');
     };
 
@@ -272,8 +272,8 @@ ${formData.message}
                 </svg>
             ),
             title: 'Telefon',
-            content: '+90 555 123 45 67',
-            link: 'tel:+905551234567'
+            content: '+90 501 107 22 20',
+            link: 'tel:+905011072220'
         },
         {
             icon: (
@@ -293,8 +293,8 @@ ${formData.message}
                 </svg>
             ),
             title: 'WhatsApp',
-            content: '+90 555 123 45 67',
-            link: 'https://wa.me/905551234567'
+            content: '+90 501 107 22 20',
+            link: 'https://wa.me/905011072220?text=i%20would%20like%20to%20contact%20you%20for%20your%20dress'
         }
     ];
 
