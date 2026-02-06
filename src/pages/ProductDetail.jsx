@@ -252,7 +252,7 @@ const ProductDetail = () => {
 
                             {/* WhatsApp */}
                             <a
-                                href={`https://wa.me/905011072220?text=${encodeURIComponent(`Merhaba, "${product.name}" ürünü hakkında bilgi almak istiyorum.`)}`}
+                                href={`https://wa.me/905511636983?text=${encodeURIComponent(`Merhaba, "${product.name}" ürünü hakkında bilgi almak istiyorum.`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="whatsapp-inquiry"

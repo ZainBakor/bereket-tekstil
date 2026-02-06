@@ -198,7 +198,7 @@ const Home = () => {
                                     Kataloğu İncele
                                 </Link>
                                 <a
-                                    href="https://wa.me/905011072220?text=i%20would%20like%20to%20contact%20you%20for%20your%20dress"
+                                    href="https://wa.me/905511636983?text=Merhaba%2C%20%C3%BCr%C3%BCnleriniz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn btn-secondary btn-lg"

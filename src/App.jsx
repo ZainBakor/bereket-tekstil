@@ -17,6 +17,7 @@ import Checkout from './pages/Checkout';
 import Contact from './pages/Contact';
 import About from './pages/About';
 import Gallery from './pages/Gallery';
+import SizeGuide from './pages/SizeGuide';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -63,6 +64,7 @@ function App() {
         <Route path="/iletisim" element={<Contact />} />
         <Route path="/hakkimizda" element={<About />} />
         <Route path="/galeri" element={<Gallery />} />
+        <Route path="/beden-olculeri" element={<SizeGuide />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLogin />} />

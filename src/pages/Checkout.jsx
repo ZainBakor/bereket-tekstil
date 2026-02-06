@@ -214,7 +214,7 @@ const Checkout = () => {
                                 Ana Sayfaya Dön
                             </Link>
                             <a
-                                href={`https://wa.me/905011072220?text=${encodeURIComponent(`Merhaba, ${orderNumber} numaralı siparişim hakkında bilgi almak istiyorum.`)}`}
+                                href={`https://wa.me/905511636983?text=${encodeURIComponent(`Merhaba, ${orderNumber} numaralı siparişim hakkında bilgi almak istiyorum.`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn-secondary btn-lg"
@@ -310,7 +310,7 @@ const Checkout = () => {
                                             />
                                         </div>
                                         {errors.phone && <span className="form-error">{errors.phone}</span>}
-                                        <span className="form-hint">Örnek: 501 107 22 20</span>
+                                        <span className="form-hint">Örnek: 551 163 69 83</span>
                                     </div>
                                 </div>
                             </div>
