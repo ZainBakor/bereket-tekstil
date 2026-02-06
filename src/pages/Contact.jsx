@@ -247,7 +247,7 @@ Merhaba Bereket Tekstil! 👋
 ${formData.message}
         `.trim();
 
-        const whatsappLink = `https://wa.me/905011072220?text=${encodeURIComponent(whatsappMessage)}`;
+        const whatsappLink = `https://wa.me/905511636983?text=${encodeURIComponent(whatsappMessage)}`;
         window.open(whatsappLink, '_blank');
     };
 
