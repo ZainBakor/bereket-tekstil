@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
 
@@ -10,67 +11,96 @@ export const useAuth = () => {
     return context;
 };
 
-// Simple admin credentials (in production, use proper backend auth)
-const ADMIN_CREDENTIALS = {
-    email: 'info.berekettekstil@gmail.com',
-    password: 'admin123'
-};
-
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem('bereketUser');
-        return savedUser ? JSON.parse(savedUser) : null;
-    });
-
-    const [isLoading, setIsLoading] = useState(false);
+    const [user, setUser] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Save user to localStorage
     useEffect(() => {
-        if (user) {
-            localStorage.setItem('bereketUser', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('bereketUser');
-        }
-    }, [user]);
+        // Check active sessions and sets up the observer
+        const getInitialSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                setUser(session.user);
+                await fetchProfile(session.user.id);
+            }
+            setIsLoading(false);
+        };
 
-    // Login function
+        getInitialSession();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            setUser(session?.user ?? null);
+            if (session?.user) {
+                await fetchProfile(session.user.id);
+            } else {
+                setProfile(null);
+            }
+            setIsLoading(false);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const fetchProfile = async (userId) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (data) {
+                setProfile(data);
+            }
+        } catch (err) {
+            console.error('Error fetching profile:', err);
+        }
+    };
+
     const login = async (email, password) => {
         setIsLoading(true);
         setError(null);
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
-            const userData = {
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
-                role: 'admin',
-                name: 'Admin',
-                loginTime: new Date().toISOString()
-            };
-            setUser(userData);
-            setIsLoading(false);
+                password,
+            });
+
+            if (error) throw error;
+
+            // Fetch profile to verify admin status
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', data.user.id)
+                .single();
+
+            if (!profileData?.is_admin) {
+                await supabase.auth.signOut();
+                throw new Error('Bu panele giriş yetkiniz bulunmamaktadır.');
+            }
+
             return { success: true };
+        } catch (err) {
+            setError(err.message);
+            setIsLoading(false);
+            return { success: false, error: err.message };
         }
-
-        setError('Geçersiz e-posta veya şifre');
-        setIsLoading(false);
-        return { success: false, error: 'Geçersiz e-posta veya şifre' };
     };
 
-    // Logout function
-    const logout = () => {
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
-        localStorage.removeItem('bereketUser');
+        setProfile(null);
     };
-
-    // Check if user is admin
-    const isAdmin = user?.role === 'admin';
 
     const value = {
         user,
-        isAdmin,
+        profile,
+        isAdmin: profile?.is_admin || false,
         isLoading,
         error,
         login,
