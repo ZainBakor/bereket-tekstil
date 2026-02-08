@@ -4,9 +4,23 @@ import { products, categories } from '../../data/products';
 import './Dashboard.css';
 
 const Dashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, profile, isAdmin, logout, isLoading } = useAuth();
 
-    if (!user) {
+    if (isLoading) {
+        return (
+            <div className="admin-loading-screen">
+                <div className="admin-loading-content">
+                    <span className="spinner"></span>
+                    <p>Yükleniyor...</p>
+                    <button onClick={logout} className="btn btn-sm btn-glass mt-md">
+                        İptal Et / Çıkış Yap
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user || !isAdmin) {
         return <Navigate to="/admin" replace />;
     }
 

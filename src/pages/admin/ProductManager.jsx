@@ -5,14 +5,28 @@ import { products as initialProducts, categories, formatPrice } from '../../data
 import './ProductManager.css';
 
 const ProductManager = () => {
-    const { user, logout } = useAuth();
+    const { user, isAdmin, logout, isLoading } = useAuth();
     const [products, setProducts] = useState(initialProducts);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
 
-    if (!user) {
+    if (isLoading) {
+        return (
+            <div className="admin-loading-screen">
+                <div className="admin-loading-content">
+                    <span className="spinner"></span>
+                    <p>Yükleniyor...</p>
+                    <button onClick={logout} className="btn btn-sm btn-glass mt-md">
+                        İptal Et / Çıkış Yap
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user || !isAdmin) {
         return <Navigate to="/admin" replace />;
     }
 
