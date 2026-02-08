@@ -15,7 +15,7 @@ const ProductCard = ({ product }) => {
                     {product.bestseller && (
                         <span className="badge badge-accent">Çok Satan</span>
                     )}
-                    {product.oldPrice && (
+                    {product.old_price && (
                         <span className="badge badge-gold">İndirim</span>
                     )}
                 </div>
@@ -52,8 +52,8 @@ const ProductCard = ({ product }) => {
                 <div className="product-card-footer">
                     <div className="product-price">
                         <span className="current-price">{formatPrice(product.price)}</span>
-                        {product.oldPrice && (
-                            <span className="old-price">{formatPrice(product.oldPrice)}</span>
+                        {product.old_price && (
+                            <span className="old-price">{formatPrice(product.old_price)}</span>
                         )}
                     </div>
                 </div>

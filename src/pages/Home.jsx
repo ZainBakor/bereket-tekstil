@@ -1,10 +1,38 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { categories, getFeaturedProducts, formatPrice } from '../data/products';
+import { supabase } from '../lib/supabase';
+import { formatPrice } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
 import './Home.css';
 
 const Home = () => {
-    const featuredProducts = getFeaturedProducts();
+    const [featuredProducts, setFeaturedProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchHomeData = async () => {
+            setIsLoading(true);
+            try {
+                const [prodRes, catRes] = await Promise.all([
+                    supabase.from('products').select('*').eq('featured', true).limit(8),
+                    supabase.from('categories').select('*')
+                ]);
+
+                if (prodRes.error) throw prodRes.error;
+                if (catRes.error) throw catRes.error;
+
+                setFeaturedProducts(prodRes.data || []);
+                setCategories(catRes.data || []);
+            } catch (error) {
+                console.error('Error fetching home data:', error.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchHomeData();
+    }, []);
 
     const features = [
         {
@@ -113,7 +141,7 @@ const Home = () => {
                                 <div className="category-image">
                                     <img src={category.image} alt={category.name} loading="lazy" />
                                     <div className="category-overlay">
-                                        <span className="category-count">{category.productCount} Ürün</span>
+                                        <span className="category-count">{category.product_count} Ürün</span>
                                     </div>
                                 </div>
                                 <div className="category-content">

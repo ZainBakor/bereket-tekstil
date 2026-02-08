@@ -1,18 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { products as initialProducts, categories, formatPrice } from '../../data/products';
+import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../data/products';
 import './ProductManager.css';
 
 const ProductManager = () => {
-    const { user, isAdmin, logout, isLoading } = useAuth();
-    const [products, setProducts] = useState(initialProducts);
+    const { user, isAdmin, logout, isLoading: authLoading } = useAuth();
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
-    if (isLoading) {
+    // Form states
+    const [formData, setFormData] = useState({
+        name: '',
+        price: '',
+        category: '',
+        description: '',
+        in_stock: true,
+        featured: false,
+        image_file: null
+    });
+
+    useEffect(() => {
+        if (user && isAdmin) {
+            fetchInitialData();
+        }
+    }, [user, isAdmin]);
+
+    const fetchInitialData = async () => {
+        setIsLoading(true);
+        try {
+            const [prodRes, catRes] = await Promise.all([
+                supabase.from('products').select('*').order('created_at', { ascending: false }),
+                supabase.from('categories').select('*').order('name')
+            ]);
+
+            if (prodRes.error) throw prodRes.error;
+            if (catRes.error) throw catRes.error;
+
+            setProducts(prodRes.data || []);
+            setCategories(catRes.data || []);
+        } catch (error) {
+            console.error('Error fetching data:', error.message);
+            alert('Veriler yüklenirken bir hata oluştu: ' + error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (authLoading || isLoading) {
         return (
             <div className="admin-loading-screen">
                 <div className="admin-loading-content">
@@ -33,24 +75,115 @@ const ProductManager = () => {
     // Filter products
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+        const matchesCategory = selectedCategory === 'all' || product.category_id === selectedCategory;
         return matchesSearch && matchesCategory;
     });
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
-            setProducts(products.filter(p => p.id !== id));
+            try {
+                const { error } = await supabase.from('products').delete().eq('id', id);
+                if (error) throw error;
+                setProducts(products.filter(p => p.id !== id));
+            } catch (error) {
+                console.error('Error deleting product:', error.message);
+                alert('Ürün silinirken bir hata oluştu.');
+            }
         }
     };
 
     const handleEdit = (product) => {
         setEditingProduct(product);
+        setFormData({
+            name: product.name,
+            price: product.price,
+            category: product.category_id,
+            description: product.description || '',
+            in_stock: product.in_stock,
+            featured: product.featured,
+            image_file: null
+        });
         setShowModal(true);
     };
 
     const handleAdd = () => {
         setEditingProduct(null);
+        setFormData({
+            name: '',
+            price: '',
+            category: categories[0]?.id || '',
+            description: '',
+            in_stock: true,
+            featured: false,
+            image_file: null
+        });
         setShowModal(true);
+    };
+
+    const handleImageChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFormData({ ...formData, image_file: e.target.files[0] });
+        }
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setIsSaving(true);
+
+        try {
+            let imageUrl = editingProduct?.images?.[0] || '';
+
+            // Handle image upload if new file is selected
+            if (formData.image_file) {
+                const file = formData.image_file;
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `products/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('product-images')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('product-images')
+                    .getPublicUrl(filePath);
+
+                imageUrl = publicUrl;
+            }
+
+            const productData = {
+                name: formData.name,
+                price: parseFloat(formData.price),
+                category_id: formData.category,
+                description: formData.description,
+                in_stock: formData.in_stock,
+                featured: formData.featured,
+                images: imageUrl ? [imageUrl] : editingProduct?.images || []
+            };
+
+            if (editingProduct) {
+                const { error } = await supabase
+                    .from('products')
+                    .update(productData)
+                    .eq('id', editingProduct.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('products')
+                    .insert([productData]);
+                if (error) throw error;
+            }
+
+            setShowModal(false);
+            fetchInitialData(); // Refresh list
+        } catch (error) {
+            console.error('Error saving product:', error.message);
+            alert('Ürün kaydedilirken bir hata oluştu: ' + error.message);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -132,7 +265,7 @@ const ProductManager = () => {
                             </thead>
                             <tbody>
                                 {filteredProducts.map(product => {
-                                    const category = categories.find(c => c.id === product.category);
+                                    const category = categories.find(c => c.id === product.category_id);
                                     return (
                                         <tr key={product.id}>
                                             <td>
@@ -148,14 +281,14 @@ const ProductManager = () => {
                                             <td>
                                                 <div className="price-cell">
                                                     <span className="current">{formatPrice(product.price)}</span>
-                                                    {product.oldPrice && (
-                                                        <span className="old">{formatPrice(product.oldPrice)}</span>
+                                                    {product.old_price && (
+                                                        <span className="old">{formatPrice(product.old_price)}</span>
                                                     )}
                                                 </div>
                                             </td>
                                             <td>
-                                                <span className={`status-badge ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
-                                                    {product.inStock ? 'Stokta' : 'Tükendi'}
+                                                <span className={`status-badge ${product.in_stock ? 'in-stock' : 'out-of-stock'}`}>
+                                                    {product.in_stock ? 'Stokta' : 'Tükendi'}
                                                 </span>
                                                 {product.featured && <span className="featured-badge">Öne Çıkan</span>}
                                             </td>
@@ -205,51 +338,107 @@ const ProductManager = () => {
 
             {/* Add/Edit Modal Placeholder */}
             {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                <div className="modal-overlay" onClick={() => !isSaving && setShowModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>{editingProduct ? 'Ürün Düzenle' : 'Yeni Ürün Ekle'}</h3>
-                            <button className="modal-close" onClick={() => setShowModal(false)}>
+                            <button className="modal-close" onClick={() => !isSaving && setShowModal(false)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="18" y1="6" x2="6" y2="18" />
                                     <line x1="6" y1="6" x2="18" y2="18" />
                                 </svg>
                             </button>
                         </div>
-                        <div className="modal-body">
-                            <p className="modal-note">
-                                Bu demo sürümde ürün ekleme/düzenleme işlemi simüle edilmektedir.
-                                Gerçek bir veritabanı entegrasyonu için Supabase kullanabilirsiniz.
-                            </p>
-                            <div className="form-group">
-                                <label className="form-label">Ürün Adı</label>
-                                <input type="text" className="form-input" defaultValue={editingProduct?.name || ''} placeholder="Ürün adı girin" />
-                            </div>
-                            <div className="form-row">
+                        <form onSubmit={handleSave}>
+                            <div className="modal-body">
                                 <div className="form-group">
-                                    <label className="form-label">Fiyat (₺)</label>
-                                    <input type="number" className="form-input" defaultValue={editingProduct?.price || ''} placeholder="0" />
+                                    <label className="form-label">Ürün Adı</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="Ürün adı girin"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Fiyat (₺)</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={formData.price}
+                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                            placeholder="0"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Kategori</label>
+                                        <select
+                                            className="form-select"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">Kategori Seçin</option>
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Kategori</label>
-                                    <select className="form-select" defaultValue={editingProduct?.category || ''}>
-                                        {categories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                        ))}
-                                    </select>
+                                    <label className="form-label">Ürün Resmi</label>
+                                    <input
+                                        type="file"
+                                        className="form-input"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                    />
+                                    {editingProduct?.images?.[0] && !formData.image_file && (
+                                        <p className="mt-xs text-sm opacity-70">Mevcut resim korunacak.</p>
+                                    )}
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Açıklama</label>
+                                    <textarea
+                                        className="form-textarea"
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        placeholder="Ürün açıklaması"
+                                        rows="3"
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group flex-row gap-sm items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="in_stock"
+                                            checked={formData.in_stock}
+                                            onChange={(e) => setFormData({ ...formData, in_stock: e.target.checked })}
+                                        />
+                                        <label htmlFor="in_stock" className="form-label mb-0">Stokta Var</label>
+                                    </div>
+                                    <div className="form-group flex-row gap-sm items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="featured"
+                                            checked={formData.featured}
+                                            onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                                        />
+                                        <label htmlFor="featured" className="form-label mb-0">Öne Çıkar</label>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label className="form-label">Açıklama</label>
-                                <textarea className="form-textarea" defaultValue={editingProduct?.description || ''} placeholder="Ürün açıklaması" rows="3" />
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-glass" onClick={() => setShowModal(false)} disabled={isSaving}>İptal</button>
+                                <button type="submit" className="btn btn-gold" disabled={isSaving}>
+                                    {isSaving ? 'Kaydediliyor...' : (editingProduct ? 'Güncelle' : 'Ekle')}
+                                </button>
                             </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn btn-glass" onClick={() => setShowModal(false)}>İptal</button>
-                            <button className="btn btn-gold" onClick={() => setShowModal(false)}>
-                                {editingProduct ? 'Güncelle' : 'Ekle'}
-                            </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             )}

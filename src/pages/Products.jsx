@@ -1,22 +1,50 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { products, categories } from '../data/products';
+import { supabase } from '../lib/supabase';
 import ProductCard from '../components/ui/ProductCard';
 import './Products.css';
 
 const Products = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [filteredProducts, setFilteredProducts] = useState(products);
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [filteredProducts, setFilteredProducts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(searchParams.get('kategori') || 'all');
     const [sortBy, setSortBy] = useState('default');
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const [prodRes, catRes] = await Promise.all([
+                    supabase.from('products').select('*'),
+                    supabase.from('categories').select('*')
+                ]);
+
+                if (prodRes.error) throw prodRes.error;
+                if (catRes.error) throw catRes.error;
+
+                setProducts(prodRes.data || []);
+                setCategories(catRes.data || []);
+            } catch (error) {
+                console.error('Error fetching products:', error.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (products.length === 0) return;
         let result = [...products];
 
         // Filter by category
         if (selectedCategory !== 'all') {
-            result = result.filter(p => p.category === selectedCategory);
+            result = result.filter(p => p.category_id === selectedCategory);
         }
 
         // Filter by search query
@@ -45,7 +73,7 @@ const Products = () => {
         }
 
         setFilteredProducts(result);
-    }, [selectedCategory, sortBy, searchQuery]);
+    }, [selectedCategory, sortBy, searchQuery, products]);
 
     const handleCategoryChange = (categoryId) => {
         setSelectedCategory(categoryId);
@@ -111,7 +139,7 @@ const Products = () => {
                                             >
                                                 <span>{category.name}</span>
                                                 <span className="count">
-                                                    {products.filter(p => p.category === category.id).length}
+                                                    {products.filter(p => p.category_id === category.id).length}
                                                 </span>
                                             </button>
                                         </li>
@@ -122,58 +150,67 @@ const Products = () => {
 
                         {/* Products Content */}
                         <div className="products-content">
-                            {/* Toolbar */}
-                            <div className="products-toolbar">
-                                <p className="products-count">
-                                    <strong>{filteredProducts.length}</strong> ürün gösteriliyor
-                                </p>
-                                <div className="sort-select">
-                                    <select
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
-                                        className="form-select"
-                                    >
-                                        <option value="default">Varsayılan Sıralama</option>
-                                        <option value="price-asc">Fiyat: Düşükten Yükseğe</option>
-                                        <option value="price-desc">Fiyat: Yüksekten Düşüğe</option>
-                                        <option value="name">İsme Göre</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Products Grid */}
-                            {filteredProducts.length > 0 ? (
-                                <div className="products-grid">
-                                    {filteredProducts.map((product, index) => (
-                                        <div
-                                            key={product.id}
-                                            className="animate-fadeInUp"
-                                            style={{ animationDelay: `${index * 0.05}s` }}
-                                        >
-                                            <ProductCard product={product} />
-                                        </div>
-                                    ))}
+                            {isLoading ? (
+                                <div className="products-loading">
+                                    <div className="spinner"></div>
+                                    <p>Ürünler yükleniyor...</p>
                                 </div>
                             ) : (
-                                <div className="no-products">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                    </svg>
-                                    <h3>Ürün bulunamadı</h3>
-                                    <p>Arama kriterlerinize uygun ürün bulunamadı.</p>
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => {
-                                            setSelectedCategory('all');
-                                            setSearchQuery('');
-                                            searchParams.delete('kategori');
-                                            setSearchParams(searchParams);
-                                        }}
-                                    >
-                                        Filtreleri Temizle
-                                    </button>
-                                </div>
+                                <>
+                                    {/* Toolbar */}
+                                    <div className="products-toolbar">
+                                        <p className="products-count">
+                                            <strong>{filteredProducts.length}</strong> ürün gösteriliyor
+                                        </p>
+                                        <div className="sort-select">
+                                            <select
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value)}
+                                                className="form-select"
+                                            >
+                                                <option value="default">Varsayılan Sıralama</option>
+                                                <option value="price-asc">Fiyat: Düşükten Yükseğe</option>
+                                                <option value="price-desc">Fiyat: Yüksekten Düşüğe</option>
+                                                <option value="name">İsme Göre</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Products Grid */}
+                                    {filteredProducts.length > 0 ? (
+                                        <div className="products-grid">
+                                            {filteredProducts.map((product, index) => (
+                                                <div
+                                                    key={product.id}
+                                                    className="animate-fadeInUp"
+                                                    style={{ animationDelay: `${index * 0.05}s` }}
+                                                >
+                                                    <ProductCard product={product} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="no-products">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="11" cy="11" r="8" />
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                            </svg>
+                                            <h3>Ürün bulunamadı</h3>
+                                            <p>Arama kriterlerinize uygun ürün bulunamadı.</p>
+                                            <button
+                                                className="btn btn-primary"
+                                                onClick={() => {
+                                                    setSelectedCategory('all');
+                                                    setSearchQuery('');
+                                                    searchParams.delete('kategori');
+                                                    setSearchParams(searchParams);
+                                                }}
+                                            >
+                                                Filtreleri Temizle
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

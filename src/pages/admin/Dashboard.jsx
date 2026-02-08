@@ -1,12 +1,41 @@
+import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { products, categories } from '../../data/products';
+import { supabase } from '../../lib/supabase';
 import './Dashboard.css';
 
 const Dashboard = () => {
-    const { user, profile, isAdmin, logout, isLoading } = useAuth();
+    const { user, isAdmin, logout, isLoading: authLoading } = useAuth();
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    if (isLoading) {
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            if (!user || !isAdmin) return;
+            setIsLoading(true);
+            try {
+                const [prodRes, catRes] = await Promise.all([
+                    supabase.from('products').select('*').order('created_at', { ascending: false }),
+                    supabase.from('categories').select('*')
+                ]);
+
+                if (prodRes.error) throw prodRes.error;
+                if (catRes.error) throw catRes.error;
+
+                setProducts(prodRes.data || []);
+                setCategories(catRes.data || []);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [user, isAdmin]);
+
+    if (authLoading || isLoading) {
         return (
             <div className="admin-loading-screen">
                 <div className="admin-loading-content">
@@ -154,7 +183,7 @@ const Dashboard = () => {
                                 </thead>
                                 <tbody>
                                     {products.slice(0, 5).map(product => {
-                                        const category = categories.find(c => c.id === product.category);
+                                        const category = categories.find(c => c.id === product.category_id);
                                         return (
                                             <tr key={product.id}>
                                                 <td>
@@ -166,8 +195,8 @@ const Dashboard = () => {
                                                 <td>{category?.name || '-'}</td>
                                                 <td>₺{product.price}</td>
                                                 <td>
-                                                    <span className={`status-badge ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
-                                                        {product.inStock ? 'Stokta' : 'Tükendi'}
+                                                    <span className={`status-badge ${product.in_stock ? 'in-stock' : 'out-of-stock'}`}>
+                                                        {product.in_stock ? 'Stokta' : 'Tükendi'}
                                                     </span>
                                                 </td>
                                             </tr>

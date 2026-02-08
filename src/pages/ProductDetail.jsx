@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getProductById, getProductsByCategory, getColorById, getSizeById, formatPrice, getCategoryById } from '../data/products';
+import { supabase } from '../lib/supabase';
+import { getColorById, getSizeById, formatPrice } from '../data/products';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ui/ProductCard';
 import './ProductDetail.css';
@@ -9,6 +10,8 @@ const ProductDetail = () => {
     const { id } = useParams();
     const { addToCart, setIsCartOpen } = useCart();
     const [product, setProduct] = useState(null);
+    const [category, setCategory] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedColor, setSelectedColor] = useState('');
     const [selectedSize, setSelectedSize] = useState('');
@@ -17,18 +20,47 @@ const ProductDetail = () => {
     const [addedToCart, setAddedToCart] = useState(false);
 
     useEffect(() => {
-        const productData = getProductById(id);
-        if (productData) {
-            setProduct(productData);
-            setSelectedColor(productData.colors?.[0] || '');
-            setSelectedSize(productData.sizes?.[0] || '');
+        const fetchProductData = async () => {
+            setIsLoading(true);
+            try {
+                // Fetch product
+                const { data: prodData, error: prodError } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
 
-            // Get related products
-            const related = getProductsByCategory(productData.category)
-                .filter(p => p.id !== productData.id)
-                .slice(0, 4);
-            setRelatedProducts(related);
-        }
+                if (prodError) throw prodError;
+                if (prodData) {
+                    setProduct(prodData);
+                    setSelectedColor(prodData.colors?.[0] || '');
+                    setSelectedSize(prodData.sizes?.[0] || '');
+
+                    // Fetch category separately to avoid complex joins if not needed
+                    const { data: catData } = await supabase
+                        .from('categories')
+                        .select('*')
+                        .eq('id', prodData.category_id)
+                        .single();
+                    setCategory(catData);
+
+                    // Fetch related products
+                    const { data: relatedData } = await supabase
+                        .from('products')
+                        .select('*')
+                        .eq('category_id', prodData.category_id)
+                        .neq('id', id)
+                        .limit(4);
+                    setRelatedProducts(relatedData || []);
+                }
+            } catch (error) {
+                console.error('Error fetching product detail:', error.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProductData();
 
         // Reset state
         setSelectedImage(0);
@@ -38,6 +70,19 @@ const ProductDetail = () => {
         // Scroll to top
         window.scrollTo(0, 0);
     }, [id]);
+
+    if (isLoading) {
+        return (
+            <main className="product-detail-page">
+                <div className="container">
+                    <div className="loading-state">
+                        <div className="spinner"></div>
+                        <p>Ürün hazırlanıyor...</p>
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     if (!product) {
         return (
@@ -52,7 +97,6 @@ const ProductDetail = () => {
         );
     }
 
-    const category = getCategoryById(product.category);
 
     const handleAddToCart = () => {
         if (!selectedColor || !selectedSize) {
@@ -100,9 +144,9 @@ const ProductDetail = () => {
                                     src={product.images?.[selectedImage] || product.images?.[0]}
                                     alt={product.name}
                                 />
-                                {product.oldPrice && (
+                                {product.old_price && (
                                     <span className="discount-badge">
-                                        %{Math.round((1 - product.price / product.oldPrice) * 100)} İndirim
+                                        %{Math.round((1 - product.price / product.old_price) * 100)} İndirim
                                     </span>
                                 )}
                             </div>
@@ -132,8 +176,8 @@ const ProductDetail = () => {
 
                             <div className="product-price-box">
                                 <span className="current-price">{formatPrice(product.price)}</span>
-                                {product.oldPrice && (
-                                    <span className="old-price">{formatPrice(product.oldPrice)}</span>
+                                {product.old_price && (
+                                    <span className="old-price">{formatPrice(product.old_price)}</span>
                                 )}
                             </div>
 
