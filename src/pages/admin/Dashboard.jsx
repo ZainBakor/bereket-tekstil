@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../data/products';
 import './Dashboard.css';
 
 const Dashboard = () => {
