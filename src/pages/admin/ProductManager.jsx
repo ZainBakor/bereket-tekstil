@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { formatPrice } from '../../data/products';
+import { formatPrice, colors as availableColors, sizes as availableSizes } from '../../data/products';
 import './ProductManager.css';
 
 const ProductManager = () => {
@@ -24,7 +24,9 @@ const ProductManager = () => {
         description: '',
         in_stock: true,
         featured: false,
-        image_file: null
+        image_file: null,
+        colors: [],
+        sizes: []
     });
 
     useEffect(() => {
@@ -74,7 +76,8 @@ const ProductManager = () => {
 
     // Filter products
     const filteredProducts = products.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const name = product.name || '';
+        const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = selectedCategory === 'all' || product.category_id === selectedCategory;
         return matchesSearch && matchesCategory;
     });
@@ -101,7 +104,9 @@ const ProductManager = () => {
             description: product.description || '',
             in_stock: product.in_stock,
             featured: product.featured,
-            image_file: null
+            image_file: null,
+            colors: product.colors || [],
+            sizes: product.sizes || []
         });
         setShowModal(true);
     };
@@ -115,7 +120,9 @@ const ProductManager = () => {
             description: '',
             in_stock: true,
             featured: false,
-            image_file: null
+            image_file: null,
+            colors: [],
+            sizes: []
         });
         setShowModal(true);
     };
@@ -124,6 +131,28 @@ const ProductManager = () => {
         if (e.target.files && e.target.files[0]) {
             setFormData({ ...formData, image_file: e.target.files[0] });
         }
+    };
+
+    const handleColorToggle = (colorId) => {
+        const currentColors = [...formData.colors];
+        const index = currentColors.indexOf(colorId);
+        if (index > -1) {
+            currentColors.splice(index, 1);
+        } else {
+            currentColors.push(colorId);
+        }
+        setFormData({ ...formData, colors: currentColors });
+    };
+
+    const handleSizeToggle = (sizeId) => {
+        const currentSizes = [...formData.sizes];
+        const index = currentSizes.indexOf(sizeId);
+        if (index > -1) {
+            currentSizes.splice(index, 1);
+        } else {
+            currentSizes.push(sizeId);
+        }
+        setFormData({ ...formData, sizes: currentSizes });
     };
 
     const handleSave = async (e) => {
@@ -160,7 +189,9 @@ const ProductManager = () => {
                 description: formData.description,
                 in_stock: formData.in_stock,
                 featured: formData.featured,
-                images: imageUrl ? [imageUrl] : editingProduct?.images || []
+                images: imageUrl ? [imageUrl] : editingProduct?.images || [],
+                colors: formData.colors,
+                sizes: formData.sizes
             };
 
             if (editingProduct) {
@@ -280,7 +311,7 @@ const ProductManager = () => {
                                             <td>{category?.name || '-'}</td>
                                             <td>
                                                 <div className="price-cell">
-                                                    <span className="current">{formatPrice(product.price)}</span>
+                                                    <span className="current">{formatPrice(product.price || 0)}</span>
                                                     {product.old_price && (
                                                         <span className="old">{formatPrice(product.old_price)}</span>
                                                     )}
@@ -387,6 +418,39 @@ const ProductManager = () => {
                                                 <option key={cat.id} value={cat.id}>{cat.name}</option>
                                             ))}
                                         </select>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Renkler</label>
+                                    <div className="color-selection-grid">
+                                        {availableColors.map(color => (
+                                            <label key={color.id} className={`color-checkbox-label ${formData.colors.includes(color.id) ? 'active' : ''}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.colors.includes(color.id)}
+                                                    onChange={() => handleColorToggle(color.id)}
+                                                    hidden
+                                                />
+                                                <span className="color-swatch" style={{ backgroundColor: color.hex }}></span>
+                                                <span className="color-name">{color.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Bedenler</label>
+                                    <div className="size-selection-grid">
+                                        {availableSizes.filter(s => ['s', 'm', 'l', 'xl'].includes(s.id)).map(size => (
+                                            <label key={size.id} className={`size-checkbox-label ${formData.sizes.includes(size.id) ? 'active' : ''}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.sizes.includes(size.id)}
+                                                    onChange={() => handleSizeToggle(size.id)}
+                                                    hidden
+                                                />
+                                                <span className="size-name">{size.name}</span>
+                                            </label>
+                                        ))}
                                     </div>
                                 </div>
                                 <div className="form-group">

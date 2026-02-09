@@ -631,6 +631,10 @@ button {
   justify-content: flex-end;
 }
 
+.h-full {
+  height: 100%;
+}
+
 /* Gap Utilities */
 .gap-xs {
   gap: var(--space-xs);

@@ -10,7 +10,8 @@ const CartSidebar = () => {
         isCartOpen,
         setIsCartOpen,
         removeFromCart,
-        updateQuantity
+        updateQuantity,
+        updateVariant
     } = useCart();
 
     const handleOverlayClick = (e) => {
@@ -83,8 +84,34 @@ const CartSidebar = () => {
                                         <div className="cart-item-info">
                                             <h4>{item.name}</h4>
                                             <div className="cart-item-details">
-                                                {color && <span>Renk: {color.name}</span>}
-                                                {size && <span>Beden: {size.name}</span>}
+                                                {item.colors && item.colors.length > 0 && (
+                                                    <div className="cart-sidebar-option">
+                                                        <select
+                                                            value={item.selectedColor}
+                                                            onChange={(e) => updateVariant(item.cartId, { selectedColor: e.target.value })}
+                                                        >
+                                                            {item.colors.map(cId => (
+                                                                <option key={cId} value={cId}>
+                                                                    {getColorById(cId)?.name || cId}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                )}
+                                                {item.sizes && item.sizes.length > 0 && (
+                                                    <div className="cart-sidebar-option">
+                                                        <select
+                                                            value={item.selectedSize}
+                                                            onChange={(e) => updateVariant(item.cartId, { selectedSize: e.target.value })}
+                                                        >
+                                                            {item.sizes.map(sId => (
+                                                                <option key={sId} value={sId}>
+                                                                    {getSizeById(sId)?.name || sId}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="cart-item-price">{formatPrice(item.price)}</div>
                                         </div>

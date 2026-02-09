@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getColorById, getSizeById, formatPrice } from '../data/products';
 import { useCart } from '../context/CartContext';
@@ -8,6 +8,7 @@ import './ProductDetail.css';
 
 const ProductDetail = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { addToCart, setIsCartOpen } = useCart();
     const [product, setProduct] = useState(null);
     const [category, setCategory] = useState(null);
@@ -107,9 +108,15 @@ const ProductDetail = () => {
         addToCart(product, quantity, selectedColor, selectedSize);
         setAddedToCart(true);
 
+        // Reset the "added" state after 2 seconds so they can add more
         setTimeout(() => {
-            setIsCartOpen(true);
-        }, 300);
+            setAddedToCart(false);
+        }, 2000);
+
+        // Redirect to cart page after a small delay
+        setTimeout(() => {
+            navigate('/sepet');
+        }, 500);
     };
 
     return (
@@ -212,7 +219,10 @@ const ProductDetail = () => {
                                                     key={colorId}
                                                     className={`color-option ${selectedColor === colorId ? 'active' : ''}`}
                                                     style={{ backgroundColor: color.hex }}
-                                                    onClick={() => setSelectedColor(colorId)}
+                                                    onClick={() => {
+                                                        setSelectedColor(colorId);
+                                                        setAddedToCart(false);
+                                                    }}
                                                     title={color.name}
                                                 >
                                                     {selectedColor === colorId && (
@@ -241,7 +251,10 @@ const ProductDetail = () => {
                                                 <button
                                                     key={sizeId}
                                                     className={`size-option ${selectedSize === sizeId ? 'active' : ''}`}
-                                                    onClick={() => setSelectedSize(sizeId)}
+                                                    onClick={() => {
+                                                        setSelectedSize(sizeId);
+                                                        setAddedToCart(false);
+                                                    }}
                                                 >
                                                     {size.name}
                                                 </button>
@@ -272,7 +285,6 @@ const ProductDetail = () => {
                                 <button
                                     className={`btn btn-gold btn-lg add-to-cart-btn ${addedToCart ? 'added' : ''}`}
                                     onClick={handleAddToCart}
-                                    disabled={addedToCart}
                                 >
                                     {addedToCart ? (
                                         <>

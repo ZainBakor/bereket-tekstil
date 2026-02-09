@@ -111,7 +111,7 @@ export const products = [
     inStock: true,
     featured: false
   },
-  
+
   // Üniversite Mezuniyet
   {
     id: 3,
@@ -144,7 +144,7 @@ export const products = [
     sizes: ['xl', 'xxl', 'xxxl'],
     inStock: true
   },
-  
+
   // Lise Mezuniyet
   {
     id: 5,
@@ -176,7 +176,7 @@ export const products = [
     sizes: ['m', 'l', 'xl'],
     inStock: true
   },
-  
+
   // Ortaokul Mezuniyet
   {
     id: 7,
@@ -207,7 +207,7 @@ export const products = [
     sizes: ['s', 'm', 'l'],
     inStock: true
   },
-  
+
   // İlkokul Mezuniyet
   {
     id: 9,
@@ -238,7 +238,7 @@ export const products = [
     sizes: ['xs', 's', 'm'],
     inStock: true
   },
-  
+
   // Anaokulu Mezuniyet
   {
     id: 11,
@@ -270,7 +270,7 @@ export const products = [
     sizes: ['xxs', 'xs', 's'],
     inStock: true
   },
-  
+
   // Mezuniyet Kepleri
   {
     id: 13,
@@ -348,6 +348,7 @@ export const getSizeById = (id) => {
 };
 
 export const formatPrice = (price) => {
+  if (price === undefined || price === null || isNaN(price)) return '₺0';
   return new Intl.NumberFormat('tr-TR', {
     style: 'currency',
     currency: 'TRY',

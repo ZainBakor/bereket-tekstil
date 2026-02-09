@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { supabase } from '../lib/supabase';
 import { formatPrice, getColorById, getSizeById } from '../data/products';
 import './Checkout.css';
 
@@ -175,23 +176,95 @@ const Checkout = () => {
 
         setIsSubmitting(true);
 
-        // Simulate order processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            // Generate order number for reference
+            const orderNum = 'BRK' + Date.now().toString().slice(-8);
+            setOrderNumber(orderNum);
 
-        // Generate order number
-        const orderNum = 'BRK' + Date.now().toString().slice(-8);
-        setOrderNumber(orderNum);
+            // 1. Save order to Supabase
+            const { data: orderData, error: orderError } = await supabase
+                .from('orders')
+                .insert([{
+                    order_number: orderNum,
+                    customer_name: `${formData.firstName} ${formData.lastName}`,
+                    customer_email: formData.email,
+                    customer_phone: getFullPhoneNumber(),
+                    shipping_address: formData.address,
+                    city: formData.city,
+                    district: formData.district,
+                    postal_code: formData.postalCode,
+                    notes: formData.notes,
+                    total_amount: cartTotal,
+                    status: 'pending'
+                }])
+                .select()
+                .single();
 
-        // Clear cart and show success
-        clearCart();
-        setOrderComplete(true);
-        setIsSubmitting(false);
+            if (orderError) throw orderError;
+
+            // 2. Save order items to Supabase
+            const orderItemsInsert = cartItems.map(item => ({
+                order_id: orderData.id,
+                product_id: item.id,
+                quantity: item.quantity,
+                unit_price: item.price,
+                selected_color: getColorById(item.selectedColor)?.name || item.selectedColor,
+                selected_size: getSizeById(item.selectedSize)?.name || item.selectedSize
+            }));
+
+            const { error: itemsError } = await supabase
+                .from('order_items')
+                .insert(orderItemsInsert);
+
+            if (itemsError) throw itemsError;
+
+            // 3. Get the detailed message before clearing the cart
+            const whatsappMsg = getWhatsAppMessage(orderNum);
+
+            // 4. Clear cart
+            clearCart();
+
+            // 5. Show success state
+            setOrderComplete(true);
+            setIsSubmitting(false);
+
+            // Direct redirection to WhatsApp
+            const whatsappUrl = `https://wa.me/905511636983?text=${encodeURIComponent(whatsappMsg)}`;
+            window.location.href = whatsappUrl;
+        } catch (error) {
+            console.error('Order submission error:', error);
+            alert('Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+            setIsSubmitting(false);
+        }
     };
 
     // Get full phone number with country code
     const getFullPhoneNumber = () => {
         const cleanPhone = formData.phone.replace(/\s/g, '');
         return `${formData.countryCode}${cleanPhone}`;
+    };
+
+    const getWhatsAppMessage = (orderNum) => {
+        let message = `*Yeni Sipariş: ${orderNum}*\n\n`;
+        message += `*Müşteri:* ${formData.firstName} ${formData.lastName}\n`;
+        message += `*Telefon:* ${getFullPhoneNumber()}\n`;
+        message += `*Adres:* ${formData.address}, ${formData.district}/${formData.city}\n\n`;
+        message += `*Ürünler:*\n`;
+
+        cartItems.forEach(item => {
+            const color = getColorById(item.selectedColor);
+            const size = getSizeById(item.selectedSize);
+            message += `- ${item.quantity}x ${item.name} (${color?.name || ''}, ${size?.name || ''}) - ${formatPrice(item.price * item.quantity)}\n`;
+        });
+
+        message += `\n*Toplam Tutar: ${formatPrice(cartTotal)}*`;
+        message += `\n\n*Ödeme:* IBAN bilgilerini rica ediyorum.`;
+
+        if (formData.notes) {
+            message += `\n\n*Not:* ${formData.notes}`;
+        }
+
+        return message;
     };
 
     if (orderComplete) {
@@ -214,7 +287,7 @@ const Checkout = () => {
                                 Ana Sayfaya Dön
                             </Link>
                             <a
-                                href={`https://wa.me/905511636983?text=${encodeURIComponent(`Merhaba, ${orderNumber} numaralı siparişim hakkında bilgi almak istiyorum.`)}`}
+                                href={`https://wa.me/905511636983?text=${encodeURIComponent(getWhatsAppMessage())}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn-secondary btn-lg"

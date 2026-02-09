@@ -4,7 +4,7 @@ import { formatPrice, getColorById, getSizeById } from '../data/products';
 import './Cart.css';
 
 const Cart = () => {
-    const { cartItems, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart();
+    const { cartItems, cartTotal, removeFromCart, updateQuantity, updateVariant, clearCart } = useCart();
 
     if (cartItems.length === 0) {
         return (
@@ -64,8 +64,36 @@ const Cart = () => {
                                                     {item.name}
                                                 </Link>
                                                 <div className="cart-item-options">
-                                                    {color && <span>Renk: {color.name}</span>}
-                                                    {size && <span>Beden: {size.name}</span>}
+                                                    {item.colors && item.colors.length > 0 && (
+                                                        <div className="cart-option-select">
+                                                            <label>Renk:</label>
+                                                            <select
+                                                                value={item.selectedColor}
+                                                                onChange={(e) => updateVariant(item.cartId, { selectedColor: e.target.value })}
+                                                            >
+                                                                {item.colors.map(cId => (
+                                                                    <option key={cId} value={cId}>
+                                                                        {getColorById(cId)?.name || cId}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                    {item.sizes && item.sizes.length > 0 && (
+                                                        <div className="cart-option-select">
+                                                            <label>Beden:</label>
+                                                            <select
+                                                                value={item.selectedSize}
+                                                                onChange={(e) => updateVariant(item.cartId, { selectedSize: e.target.value })}
+                                                            >
+                                                                {item.sizes.map(sId => (
+                                                                    <option key={sId} value={sId}>
+                                                                        {getSizeById(sId)?.name || sId}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="cart-item-price-mobile">
                                                     {formatPrice(item.price)}

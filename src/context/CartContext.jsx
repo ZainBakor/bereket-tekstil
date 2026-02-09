@@ -13,7 +13,17 @@ export const useCart = () => {
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState(() => {
         const savedCart = localStorage.getItem('bereketCart');
-        return savedCart ? JSON.parse(savedCart) : [];
+        const items = savedCart ? JSON.parse(savedCart) : [];
+        // Migration: Ensure all items have a variantKey
+        return items.map(item => {
+            if (!item.variantKey) {
+                return {
+                    ...item,
+                    variantKey: `${item.id}-${item.selectedColor || ''}-${item.selectedSize || ''}`
+                };
+            }
+            return item;
+        });
     });
 
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -26,18 +36,14 @@ export const CartProvider = ({ children }) => {
     // Add item to cart
     const addToCart = (product, quantity = 1, selectedColor, selectedSize) => {
         setCartItems(prevItems => {
-            const existingItem = prevItems.find(
-                item =>
-                    item.id === product.id &&
-                    item.selectedColor === selectedColor &&
-                    item.selectedSize === selectedSize
-            );
+            // Create a unique key for this variant
+            const variantKey = `${product.id}-${selectedColor || ''}-${selectedSize || ''}`;
+
+            const existingItem = prevItems.find(item => item.variantKey === variantKey);
 
             if (existingItem) {
                 return prevItems.map(item =>
-                    item.id === product.id &&
-                        item.selectedColor === selectedColor &&
-                        item.selectedSize === selectedSize
+                    item.variantKey === variantKey
                         ? { ...item, quantity: item.quantity + quantity }
                         : item
                 );
@@ -48,7 +54,8 @@ export const CartProvider = ({ children }) => {
                 quantity,
                 selectedColor,
                 selectedSize,
-                cartId: Date.now() // Unique ID for cart item
+                variantKey,
+                cartId: Date.now() + Math.random().toString(36).substr(2, 9) // More unique ID
             }];
         });
     };
@@ -70,6 +77,40 @@ export const CartProvider = ({ children }) => {
                 item.cartId === cartId ? { ...item, quantity } : item
             )
         );
+    };
+
+    // Update item variant (color or size)
+    const updateVariant = (cartId, updates) => {
+        setCartItems(prevItems => {
+            const currentItem = prevItems.find(item => item.cartId === cartId);
+            if (!currentItem) return prevItems;
+
+            const updatedItem = { ...currentItem, ...updates };
+            const newVariantKey = `${updatedItem.id}-${updatedItem.selectedColor || ''}-${updatedItem.selectedSize || ''}`;
+
+            // Check if another item already has this new variant key
+            const existingItem = prevItems.find(item =>
+                item.variantKey === newVariantKey && item.cartId !== cartId
+            );
+
+            if (existingItem) {
+                // Merge quantities and remove the current item
+                return prevItems
+                    .filter(item => item.cartId !== cartId)
+                    .map(item =>
+                        item.cartId === existingItem.cartId
+                            ? { ...item, quantity: item.quantity + currentItem.quantity }
+                            : item
+                    );
+            }
+
+            // Just update the current item
+            return prevItems.map(item =>
+                item.cartId === cartId
+                    ? { ...updatedItem, variantKey: newVariantKey }
+                    : item
+            );
+        });
     };
 
     // Clear entire cart
@@ -94,6 +135,7 @@ export const CartProvider = ({ children }) => {
         addToCart,
         removeFromCart,
         updateQuantity,
+        updateVariant,
         clearCart
     };
 

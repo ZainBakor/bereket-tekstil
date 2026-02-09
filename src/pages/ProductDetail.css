@@ -247,6 +247,7 @@
     color: var(--text-secondary);
     font-weight: 500;
     transition: all var(--transition-normal);
+    cursor: pointer;
 }
 
 .size-option:hover {

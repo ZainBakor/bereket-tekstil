@@ -165,9 +165,25 @@
 .cart-item-details {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     font-size: 0.8rem;
     color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.cart-sidebar-option select {
+    width: 100%;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    background: var(--bg-white);
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.cart-sidebar-option select:hover {
+    border-color: var(--gold);
 }
 
 .cart-item-price {

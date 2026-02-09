@@ -23,6 +23,7 @@ import SizeGuide from './pages/SizeGuide';
 import AdminLogin from './pages/admin/AdminLogin';
 import Dashboard from './pages/admin/Dashboard';
 import ProductManager from './pages/admin/ProductManager';
+import OrderManager from './pages/admin/OrderManager';
 
 import './App.css';
 
@@ -70,6 +71,7 @@ function App() {
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/urunler" element={<ProductManager />} />
+        <Route path="/admin/siparisler" element={<OrderManager />} />
       </Routes>
 
       {!isAdminRoute && <Footer />}

@@ -8,6 +8,7 @@ const Dashboard = () => {
     const { user, isAdmin, logout, isLoading: authLoading } = useAuth();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -15,16 +16,19 @@ const Dashboard = () => {
             if (!user || !isAdmin) return;
             setIsLoading(true);
             try {
-                const [prodRes, catRes] = await Promise.all([
+                const [prodRes, catRes, orderRes] = await Promise.all([
                     supabase.from('products').select('*').order('created_at', { ascending: false }),
-                    supabase.from('categories').select('*')
+                    supabase.from('categories').select('*'),
+                    supabase.from('orders').select('*').order('created_at', { ascending: false })
                 ]);
 
                 if (prodRes.error) throw prodRes.error;
                 if (catRes.error) throw catRes.error;
+                if (orderRes.error) throw orderRes.error;
 
                 setProducts(prodRes.data || []);
                 setCategories(catRes.data || []);
+                setOrders(orderRes.data || []);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error.message);
             } finally {
@@ -81,7 +85,7 @@ const Dashboard = () => {
         },
         {
             title: 'Bekleyen Sipariş',
-            value: 0,
+            value: orders.filter(o => o.status === 'pending').length,
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
@@ -202,6 +206,50 @@ const Dashboard = () => {
                                             </tr>
                                         );
                                     })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    {/* Recent Orders */}
+                    <section className="recent-products mt-xl">
+                        <div className="section-header flex justify-between items-center">
+                            <h2>Son Siparişler</h2>
+                            <Link to="/admin/siparisler" className="btn btn-sm btn-glass">
+                                Tümünü Gör
+                            </Link>
+                        </div>
+                        <div className="products-table-container">
+                            <table className="products-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sipariş No</th>
+                                        <th>Müşteri</th>
+                                        <th>Tutar</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orders.slice(0, 5).map(order => (
+                                        <tr key={order.id}>
+                                            <td><span className="order-id">#{order.order_number}</span></td>
+                                            <td>{order.customer_name}</td>
+                                            <td>{formatPrice(order.total_amount)}</td>
+                                            <td>
+                                                <span className={`status-badge status-${order.status}`}>
+                                                    {order.status === 'pending' ? 'Bekliyor' :
+                                                        order.status === 'shipped' ? 'Kargoda' :
+                                                            order.status === 'completed' ? 'Tamamlandı' :
+                                                                order.status === 'cancelled' ? 'İptal' : order.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {orders.length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" className="empty-table-msg">Sipariş bulunamadı.</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
