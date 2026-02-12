@@ -25,6 +25,7 @@ const Checkout = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [orderComplete, setOrderComplete] = useState(false);
     const [orderNumber, setOrderNumber] = useState('');
+    const [finalWhatsAppMsg, setFinalWhatsAppMsg] = useState('');
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -220,6 +221,7 @@ const Checkout = () => {
 
             // 3. Get the detailed message before clearing the cart
             const whatsappMsg = getWhatsAppMessage(orderNum);
+            setFinalWhatsAppMsg(whatsappMsg);
 
             // 4. Clear cart
             clearCart();
@@ -254,7 +256,8 @@ const Checkout = () => {
         cartItems.forEach(item => {
             const color = getColorById(item.selectedColor);
             const size = getSizeById(item.selectedSize);
-            message += `- ${item.quantity}x ${item.name} (${color?.name || ''}, ${size?.name || ''}) - ${formatPrice(item.price * item.quantity)}\n`;
+            const productUrl = `${window.location.origin}/urun/${item.id}`;
+            message += `* ${item.quantity}x ${item.name} (${color?.name || ''}, ${size?.name || ''}) - ${formatPrice(item.price * item.quantity)}\n   Link: ${productUrl}\n`;
         });
 
         message += `\n*Toplam Tutar: ${formatPrice(cartTotal)}*`;
@@ -287,7 +290,7 @@ const Checkout = () => {
                                 Ana Sayfaya Dön
                             </Link>
                             <a
-                                href={`https://wa.me/905511636983?text=${encodeURIComponent(getWhatsAppMessage())}`}
+                                href={`https://wa.me/905511636983?text=${encodeURIComponent(finalWhatsAppMsg)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn-secondary btn-lg"
