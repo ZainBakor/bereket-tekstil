@@ -1,0 +1,9 @@
+NOT FOUND: works_galary (Error: PGRST205 - Could not find the table 'public.works_galary' in the schema cache)
+FOUND: works_gallery
+NOT FOUND: Works_Galary (Error: PGRST205 - Could not find the table 'public.Works_Galary' in the schema cache)
+NOT FOUND: Works_Gallery (Error: PGRST205 - Could not find the table 'public.Works_Gallery' in the schema cache)
+NOT FOUND: WORKS_GALARY (Error: PGRST205 - Could not find the table 'public.WORKS_GALARY' in the schema cache)
+NOT FOUND: WORKS_GALLERY (Error: PGRST205 - Could not find the table 'public.WORKS_GALLERY' in the schema cache)
+NOT FOUND: works_galerie (Error: PGRST205 - Could not find the table 'public.works_galerie' in the schema cache)
+NOT FOUND: galeri (Error: PGRST205 - Could not find the table 'public.galeri' in the schema cache)
+NOT FOUND: gallery (Error: PGRST205 - Could not find the table 'public.gallery' in the schema cache)

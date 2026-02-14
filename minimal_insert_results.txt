@@ -1,0 +1,3 @@
+Attempting minimal insert into works_gallery...
+Error: PGRST204 - Could not find the 'title' column of 'works_gallery' in the schema cache
+Details: null

@@ -24,6 +24,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import Dashboard from './pages/admin/Dashboard';
 import ProductManager from './pages/admin/ProductManager';
 import OrderManager from './pages/admin/OrderManager';
+import GalleryManager from './pages/admin/GalleryManager';
 
 import './App.css';
 
@@ -72,6 +73,7 @@ function App() {
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/urunler" element={<ProductManager />} />
         <Route path="/admin/siparisler" element={<OrderManager />} />
+        <Route path="/admin/galeri" element={<GalleryManager />} />
       </Routes>
 
       {!isAdminRoute && <Footer />}

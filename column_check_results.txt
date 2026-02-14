@@ -1,0 +1,5 @@
+Checking columns for works_gallery...
+RPC failed: Could not find the function public.get_table_columns(table_name) in the schema cache
+Insert into empty failed: null value in column "media_url" of relation "works_gallery" violates not-null constraint
+Hint: null
+Details: Failing row contains (544ed818-f85b-4f64-8c68-b14cb8582fec, null, null, null, null, 0, 2026-02-14 11:01:28.210457+00).

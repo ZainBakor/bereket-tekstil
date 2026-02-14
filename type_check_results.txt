@@ -1,0 +1,4 @@
+Trying category_id as number: 0
+Error: PGRST204 - Could not find the 'category_id' column of 'works_gallery' in the schema cache
+Trying category_id as string: universite
+Error: PGRST204 - Could not find the 'category_id' column of 'works_gallery' in the schema cache

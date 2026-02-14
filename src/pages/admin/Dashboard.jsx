@@ -111,6 +111,7 @@ const Dashboard = () => {
         { title: 'Ürün Ekle', path: '/admin/urunler', icon: '+' },
         { title: 'Tüm Ürünler', path: '/admin/urunler', icon: '📦' },
         { title: 'Siparişler', path: '/admin/siparisler', icon: '📋' },
+        { title: 'Galeri Yönetimi', path: '/admin/galeri', icon: '🖼️' },
         { title: 'Siteye Git', path: '/', icon: '🌐' }
     ];
 

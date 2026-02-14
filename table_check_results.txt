@@ -1,0 +1,7 @@
+NOT FOUND: works_galary (Error: PGRST205)
+FOUND TABLE: works_gallery
+NOT FOUND: gallery (Error: PGRST205)
+NOT FOUND: galary (Error: PGRST205)
+NOT FOUND: portfolio (Error: PGRST205)
+FOUND TABLE: categories
+FOUND TABLE: products

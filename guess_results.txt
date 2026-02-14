@@ -1,0 +1,14 @@
+Trying: {"media_url":"test","title":"test"}
+Error: PGRST204 - Could not find the 'title' column of 'works_gallery' in the schema cache
+Trying: {"media_url":"test","name":"test"}
+Error: PGRST204 - Could not find the 'name' column of 'works_gallery' in the schema cache
+Trying: {"media_url":"test","caption":"test"}
+Error: 23502 - null value in column "media_type" of relation "works_gallery" violates not-null constraint
+Trying: {"media_url":"test","type":"image"}
+Error: PGRST204 - Could not find the 'type' column of 'works_gallery' in the schema cache
+Trying: {"media_url":"test","media_type":"image"}
+SUCCESS!
+Trying: {"media_url":"test","category_id":"universite"}
+Error: PGRST204 - Could not find the 'category_id' column of 'works_gallery' in the schema cache
+Trying: {"media_url":"test","category":"universite"}
+Error: PGRST204 - Could not find the 'category' column of 'works_gallery' in the schema cache

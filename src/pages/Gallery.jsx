@@ -1,86 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import './Gallery.css';
 
 const Gallery = () => {
     const [selectedImage, setSelectedImage] = useState(null);
+    const [galleryItems, setGalleryItems] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const galleryImages = [
-        {
-            id: 1,
-            src: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop',
-            title: 'Üniversite Mezuniyet Töreni',
-            category: 'universite'
-        },
-        {
-            id: 2,
-            src: 'https://images.unsplash.com/photo-1627556704302-624286467c65?w=800&h=600&fit=crop',
-            title: 'Mezuniyet Anı',
-            category: 'universite'
-        },
-        {
-            id: 3,
-            src: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?w=800&h=600&fit=crop',
-            title: 'Lise Mezuniyeti',
-            category: 'lise'
-        },
-        {
-            id: 4,
-            src: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&h=600&fit=crop',
-            title: 'Ortaokul Töreni',
-            category: 'ortaokul'
-        },
-        {
-            id: 5,
-            src: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=600&fit=crop',
-            title: 'İlkokul Mezuniyeti',
-            category: 'ilkokul'
-        },
-        {
-            id: 6,
-            src: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=800&h=600&fit=crop',
-            title: 'Anaokulu Töreni',
-            category: 'anaokulu'
-        },
-        {
-            id: 7,
-            src: 'https://images.unsplash.com/photo-1564585222527-c2777e60752e?w=800&h=600&fit=crop',
-            title: 'Mezuniyet Kepleri',
-            category: 'kepler'
-        },
-        {
-            id: 8,
-            src: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop',
-            title: 'Toplu Mezuniyet',
-            category: 'universite'
-        },
-        {
-            id: 9,
-            src: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&h=600&fit=crop',
-            title: 'Akademisyen Cübbeleri',
-            category: 'akademisyen'
-        },
-        {
-            id: 10,
-            src: 'https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?w=800&h=600&fit=crop',
-            title: 'Mutlu Anlar',
-            category: 'universite'
-        },
-        {
-            id: 11,
-            src: 'https://images.unsplash.com/photo-1551836022-b06985bceb24?w=800&h=600&fit=crop',
-            title: 'Tören Görüntüsü',
-            category: 'lise'
-        },
-        {
-            id: 12,
-            src: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=800&h=600&fit=crop',
-            title: 'Kutlama Anı',
-            category: 'universite'
+    useEffect(() => {
+        fetchGallery();
+    }, []);
+
+    const fetchGallery = async () => {
+        setIsLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('works_gallery')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setGalleryItems(data || []);
+        } catch (error) {
+            console.error('Error fetching gallery:', error.message);
+        } finally {
+            setIsLoading(false);
         }
-    ];
+    };
 
-    const openLightbox = (image) => {
-        setSelectedImage(image);
+    const openLightbox = (item) => {
+        setSelectedImage(item);
         document.body.style.overflow = 'hidden';
     };
 
@@ -90,16 +39,17 @@ const Gallery = () => {
     };
 
     const navigateImage = (direction) => {
-        const currentIndex = galleryImages.findIndex(img => img.id === selectedImage.id);
+        if (!selectedImage) return;
+        const currentIndex = galleryItems.findIndex(img => img.id === selectedImage.id);
         let newIndex;
 
         if (direction === 'prev') {
-            newIndex = currentIndex === 0 ? galleryImages.length - 1 : currentIndex - 1;
+            newIndex = currentIndex === 0 ? galleryItems.length - 1 : currentIndex - 1;
         } else {
-            newIndex = currentIndex === galleryImages.length - 1 ? 0 : currentIndex + 1;
+            newIndex = currentIndex === galleryItems.length - 1 ? 0 : currentIndex + 1;
         }
 
-        setSelectedImage(galleryImages[newIndex]);
+        setSelectedImage(galleryItems[newIndex]);
     };
 
     return (
@@ -107,34 +57,56 @@ const Gallery = () => {
             <section className="page-header">
                 <div className="container">
                     <h1>Galeri</h1>
-                    <p>Mezuniyet törenlerinden kareler</p>
+                    <p>Mezuniyet törenlerinden kareler ve videolar</p>
                 </div>
             </section>
 
             <section className="gallery-section">
                 <div className="container">
-                    <div className="gallery-grid">
-                        {galleryImages.map((image, index) => (
-                            <div
-                                key={image.id}
-                                className={`gallery-item ${index === 0 ? 'large' : ''}`}
-                                onClick={() => openLightbox(image)}
-                            >
-                                <img src={image.src} alt={image.title} loading="lazy" />
-                                <div className="gallery-overlay">
-                                    <h4>{image.title}</h4>
-                                    <span className="gallery-zoom">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="11" cy="11" r="8" />
-                                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                            <line x1="11" y1="8" x2="11" y2="14" />
-                                            <line x1="8" y1="11" x2="14" y2="11" />
-                                        </svg>
-                                    </span>
+                    {isLoading ? (
+                        <div className="gallery-loading">
+                            <span className="spinner"></span>
+                            <p>Yükleniyor...</p>
+                        </div>
+                    ) : galleryItems.length > 0 ? (
+                        <div className="gallery-grid">
+                            {galleryItems.map((item, index) => (
+                                <div
+                                    key={item.id}
+                                    className={`gallery-item ${index === 0 ? 'large' : ''}`}
+                                    onClick={() => openLightbox(item)}
+                                >
+                                    {item.media_type === 'video' ? (
+                                        <div className="video-thumbnail">
+                                            <video src={item.media_url} muted />
+                                            <div className="video-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                                    <polygon points="5 3 19 12 5 21 5 3" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <img src={item.media_url} alt={item.caption} loading="lazy" />
+                                    )}
+                                    <div className="gallery-overlay">
+                                        <h4>{item.caption}</h4>
+                                        <span className="gallery-zoom">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="11" cy="11" r="8" />
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                                <line x1="11" y1="8" x2="11" y2="14" />
+                                                <line x1="8" y1="11" x2="14" y2="11" />
+                                            </svg>
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="gallery-empty">
+                            <p>Henüz içerik eklenmemiş.</p>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -158,8 +130,12 @@ const Gallery = () => {
                     </button>
 
                     <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-                        <img src={selectedImage.src} alt={selectedImage.title} />
-                        <h4>{selectedImage.title}</h4>
+                        {selectedImage.media_type === 'video' ? (
+                            <video src={selectedImage.media_url} controls autoPlay />
+                        ) : (
+                            <img src={selectedImage.media_url} alt={selectedImage.caption} />
+                        )}
+                        <h4>{selectedImage.caption}</h4>
                     </div>
 
                     <button

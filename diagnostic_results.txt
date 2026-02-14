@@ -1,0 +1,7 @@
+Starting diagnostic...
+Testing table: works_gallery
+Select Success: Data length 0
+Attempting insert of: {"title":"Diagnostic Test","url":"https://example.com/test.jpg","type":"image","category":"universite"}
+Insert Error: PGRST204 - Could not find the 'category' column of 'works_gallery' in the schema cache
+Hint: No hint
+Details: No details
