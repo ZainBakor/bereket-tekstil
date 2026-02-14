@@ -128,10 +128,27 @@ const Dashboard = () => {
                         <span className="admin-badge">Admin Panel</span>
                     </div>
                     <div className="admin-user">
-                        <span>Hoş geldin, {user.name}</span>
-                        <button onClick={logout} className="btn btn-sm btn-glass">
-                            Çıkış Yap
-                        </button>
+                        <span className="user-welcome">Hoş geldin, {user.name}</span>
+                        <div className="admin-actions">
+                            <button
+                                onClick={() => logout(false)}
+                                className="btn btn-sm btn-glass"
+                                title="Bu cihazdan çıkış yap"
+                            >
+                                Çıkış Yap
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (confirm('Tüm cihazlardaki oturumunuz kapatılacak. Emin misiniz?')) {
+                                        logout(true);
+                                    }
+                                }}
+                                className="btn btn-sm btn-danger ml-sm"
+                                title="Tüm cihazlardan çıkış yap"
+                            >
+                                Güvenli Çıkış (Tüm Cihazlar)
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>

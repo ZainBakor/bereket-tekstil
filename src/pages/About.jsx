@@ -1,7 +1,30 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import './About.css';
 
 const About = () => {
+    const [heroMedia, setHeroMedia] = useState(null);
+
+    useEffect(() => {
+        const fetchHeroMedia = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('works_gallery')
+                    .select('media_url, media_type')
+                    .eq('category', 'about_hero')
+                    .maybeSingle();
+
+                if (error) throw error;
+                if (data) setHeroMedia(data);
+            } catch (err) {
+                console.error('Error fetching about hero:', err);
+            }
+        };
+
+        fetchHeroMedia();
+    }, []);
+
     const stats = [
         { number: '10+', label: 'Yıllık Deneyim' },
         { number: '5000+', label: 'Mutlu Müşteri' },
@@ -85,10 +108,30 @@ const About = () => {
                             </Link>
                         </div>
                         <div className="about-image">
-                            <img
-                                src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=700&fit=crop"
-                                alt="Mezuniyet töreni"
-                            />
+                            {heroMedia ? (
+                                heroMedia.media_type === 'video' ? (
+                                    <video
+                                        src={heroMedia.media_url}
+                                        autoPlay
+                                        loop
+                                        muted
+                                        playsInline
+                                        className="about-hero-media"
+                                    />
+                                ) : (
+                                    <img
+                                        src={heroMedia.media_url}
+                                        alt="Mezuniyet töreni"
+                                        className="about-hero-media"
+                                    />
+                                )
+                            ) : (
+                                <img
+                                    src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=700&fit=crop"
+                                    alt="Mezuniyet töreni"
+                                    className="about-hero-media"
+                                />
+                            )}
                             <div className="about-image-overlay">
                                 <span className="text-gradient">10+ Yıllık Tecrübe</span>
                             </div>

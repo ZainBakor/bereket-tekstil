@@ -146,10 +146,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = async () => {
-        console.log('Logging out...');
+    const logout = async (global = false) => {
+        console.log(`Logging out${global ? ' globally' : ''}...`);
         try {
-            await supabase.auth.signOut();
+            await supabase.auth.signOut({ scope: global ? 'global' : 'local' });
         } catch (err) {
             console.error('Error signing out:', err);
         } finally {
