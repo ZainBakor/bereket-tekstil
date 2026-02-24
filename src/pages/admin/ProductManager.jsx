@@ -224,8 +224,8 @@ const ProductManager = () => {
                 <div className="container flex justify-between items-center">
                     <div className="admin-brand">
                         <Link to="/admin/dashboard" className="admin-logo">
-                            <span className="logo-text">BEREKET</span>
-                            <span className="logo-accent">TEKSTİL</span>
+                            <span className="logo-text">ALTIN</span>
+                            <span className="logo-accent">MEZUNİYET</span>
                         </Link>
                         <span className="admin-badge">Ürün Yönetimi</span>
                     </div>

@@ -16,11 +16,12 @@ async function setup() {
         console.log(`
             create table public.works_gallery (
               id uuid default gen_random_uuid() primary key,
-              title text not null,
-              url text not null,
-              type text not null default 'image',
+              caption text,
+              media_url text not null,
+              media_type text not null default 'image',
+              thumbnail_url text,
               category text,
-              storage_path text,
+              display_order integer default 0,
               created_at timestamp with time zone default timezone('utc'::text, now()) not null
             );
             

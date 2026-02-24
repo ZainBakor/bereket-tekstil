@@ -21,9 +21,9 @@ async function diagnostic() {
 
         // 2. Try to insert
         const testItem = {
-            title: 'Diagnostic Test',
-            url: 'https://example.com/test.jpg',
-            type: 'image',
+            caption: 'Diagnostic Test',
+            media_url: 'https://example.com/test.jpg',
+            media_type: 'image',
             category: 'universite'
         };
         log += `Attempting insert of: ${JSON.stringify(testItem)}\n`;

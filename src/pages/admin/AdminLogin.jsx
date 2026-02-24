@@ -106,8 +106,8 @@ const AdminLogin = () => {
                 <div className="login-card">
                     <div className="login-header">
                         <div className="login-logo">
-                            <span className="logo-text">BEREKET</span>
-                            <span className="logo-accent">TEKSTİL</span>
+                            <span className="logo-text">ALTIN</span>
+                            <span className="logo-accent">MEZUNİYET</span>
                         </div>
                         <h1>Admin Girişi</h1>
                         <p>Yönetim paneline giriş yapın</p>
@@ -142,7 +142,7 @@ const AdminLogin = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="form-input"
-                                placeholder="info.berekettekstil@gmail.com"
+                                placeholder="info.AltınMezuniyet@gmail.com"
                                 required
                             />
                         </div>
@@ -187,7 +187,7 @@ const AdminLogin = () => {
 
                     <div className="login-footer">
                         <p>Demo bilgileri:</p>
-                        <code>info.berekettekstil@gmail.com / admin123</code>
+                        <code>info.AltınMezuniyet@gmail.com / admin123</code>
                     </div>
                 </div>
             </div>

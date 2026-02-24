@@ -100,13 +100,17 @@
     color: var(--bg-white);
 }
 
-.logo-scissors-img {
-    width: 48px;
-    height: 48px;
+.logo-altin-img {
+    width: 60px;
+    height: 60px;
     object-fit: contain;
-    border-radius: var(--radius-sm);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: white;
+    mix-blend-mode: screen;
+    transition: all var(--transition-normal);
+}
+
+.header-scrolled .logo-altin-img {
+    width: 50px;
+    height: 50px;
 }
 
 .logo-text-wrapper {
@@ -138,9 +142,9 @@
 }
 
 .logo-tagline {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     margin-top: -2px;
 }
@@ -149,10 +153,16 @@
 .nav-links {
     display: flex;
     align-items: center;
-    gap: var(--space-xl);
+    gap: var(--space-lg);
     list-style: none;
     margin: 0;
     padding: 0;
+}
+
+@media (max-width: 1400px) {
+    .nav-links {
+        gap: var(--space-md);
+    }
 }
 
 .nav-links li {
@@ -161,14 +171,15 @@
 }
 
 .nav-link {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     transition: color var(--transition-normal);
     position: relative;
     padding: var(--space-sm) 0;
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .nav-link::after {
@@ -329,12 +340,38 @@
     display: flex !important;
 }
 
+.hide-tablet {
+    display: flex !important;
+}
+
+@media (max-width: 1024px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
 .hide-desktop {
     display: none !important;
 }
 
+.hide-desktop-only {
+    display: flex !important;
+}
+
+@media (min-width: 1201px) {
+    .hide-desktop-only {
+        display: none !important;
+    }
+}
+
 /* Responsive Styles */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .header-top-left .header-contact.hide-mobile {
         display: none !important;
     }
@@ -353,6 +390,11 @@
 
     .mobile-menu {
         display: block;
+    }
+
+    .logo-text,
+    .logo-accent {
+        font-size: 1.2rem;
     }
 }
 

@@ -45,12 +45,12 @@ const Header = () => {
                             </svg>
                             <span>+90 551 163 69 83</span>
                         </a>
-                        <a href="mailto:info.berekettekstil@gmail.com" className="header-contact hide-mobile">
+                        <a href="mailto:info.AltınMezuniyet@gmail.com" className="header-contact hide-mobile">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                                 <polyline points="22,6 12,13 2,6" />
                             </svg>
-                            <span>info.berekettekstil@gmail.com</span>
+                            <span>info.AltınMezuniyet@gmail.com</span>
                         </a>
                     </div>
                     <div className="header-top-right flex gap-md">
@@ -77,17 +77,17 @@ const Header = () => {
                     <Link to="/" className="logo">
                         <div className="logo-icon">
                             <img
-                                src="/logo-scissors.png"
-                                alt="Bereket Tekstil"
-                                className="logo-scissors-img"
+                                src="/logo-altin.png"
+                                alt="Altın Mezuniyet"
+                                className="logo-altin-img"
                             />
                         </div>
                         <div className="logo-text-wrapper">
                             <div className="logo-main">
-                                <span className="logo-text">BEREKET</span>
-                                <span className="logo-accent">TEKSTİL</span>
+                                <span className="logo-text">ALTIN</span>
+                                <span className="logo-accent">MEZUNİYET</span>
                             </div>
-                            <span className="logo-tagline">ÜRETİMDE BEREKET, ÜRÜNDE KALİTE.</span>
+                            <span className="logo-tagline">KALİTE VE GÜVENİN ADRESİ.</span>
                         </div>
                     </Link>
 
@@ -124,7 +124,7 @@ const Header = () => {
                         </button>
 
                         {/* Admin Link */}
-                        <Link to="/admin" className="btn btn-sm btn-glass hide-mobile">
+                        <Link to="/admin" className="btn btn-sm btn-glass hide-tablet">
                             Admin
                         </Link>
 

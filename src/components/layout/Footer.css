@@ -131,10 +131,11 @@
     color: var(--gold);
 }
 
-.footer-scissors-img {
-    width: 50px;
-    height: 50px;
+.footer-logo-img {
+    width: 60px;
+    height: 60px;
     object-fit: contain;
+    mix-blend-mode: screen;
     border-radius: var(--radius-sm);
 }
 
