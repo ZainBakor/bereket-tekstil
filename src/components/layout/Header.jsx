@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+
+/**
+ * Header Component - Rebranded to "Altın Mezuniyet"
+ * Manages navigation, responsive mobile menu, and branding.
+ */
 import './Header.css';
 
 const Header = () => {
@@ -45,13 +50,14 @@ const Header = () => {
                             </svg>
                             <span>+90 551 163 69 83</span>
                         </a>
-                        <a href="mailto:info.AltınMezuniyet@gmail.com" className="header-contact hide-mobile">
+                        {/* Contact Email - Displayed as static text for appearance only as per user request */}
+                        <div className="header-contact hide-mobile">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                                 <polyline points="22,6 12,13 2,6" />
                             </svg>
                             <span>info.AltınMezuniyet@gmail.com</span>
-                        </a>
+                        </div>
                     </div>
                     <div className="header-top-right flex gap-md">
                         <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
@@ -76,6 +82,7 @@ const Header = () => {
                     {/* Logo */}
                     <Link to="/" className="logo">
                         <div className="logo-icon">
+                            {/* High-quality metallic logo with CSS blending applied for a premium look */}
                             <img
                                 src="/logo-altin.png"
                                 alt="Altın Mezuniyet"

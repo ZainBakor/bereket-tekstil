@@ -104,6 +104,7 @@
     width: 60px;
     height: 60px;
     object-fit: contain;
+    /* Use screen mode to hide black background and blend golden highlights with the header */
     mix-blend-mode: screen;
     transition: all var(--transition-normal);
 }
